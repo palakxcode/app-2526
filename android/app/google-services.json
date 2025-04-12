@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "414564563740",
+    "project_id": "android-club-bdf3e",
+    "storage_bucket": "android-club-bdf3e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:414564563740:android:83e853c8a887761f0bd8d9",
+        "android_client_info": {
+          "package_name": "com.example.ac_2425"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsV2acO8j24GjEiNUbMx9PWxpDiukvOAs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
