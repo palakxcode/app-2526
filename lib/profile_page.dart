@@ -5,16 +5,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'widgets/profile_card.dart';
 
 class ProfilePage extends StatelessWidget {
-  // Firebase instances
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Pastel color palette
   final Color primaryColor = Color(0xFFBFD8D2); // Soft teal
   final Color secondaryColor = Color(0xFFDCB8CB); // Soft pink
   final Color accentColor = Color(0xFFF3B8B8); // Soft coral
   final Color backgroundColor = Color(0xFFF9F9F9); // Off-white
-  final Color textColor = Color(0xFF5C5C5C); // Soft dark gray
+  final Color textColor = Colors.black; // Dark text
 
   Future<void> logout(BuildContext context) async {
     await _auth.signOut();
@@ -23,24 +21,19 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get current user
     final User? currentUser = _auth.currentUser;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Profile",
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.w600,
+      backgroundColor: backgroundColor,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [primaryColor.withOpacity(0.2), Colors.white],
           ),
         ),
-        backgroundColor: primaryColor,
-        elevation: 0,
-      ),
-      body: Container(
-        color: backgroundColor,
-        padding: EdgeInsets.all(24),
+        padding: EdgeInsets.only(top: 50, left: 16, right: 16, bottom: 16),
         child: currentUser != null
             ? StreamBuilder<DocumentSnapshot>(
                 stream: _firestore
@@ -58,7 +51,6 @@ class ProfilePage extends StatelessWidget {
                     return Center(child: Text('Error loading profile'));
                   }
 
-                  // Get user data
                   String name = "Guest";
                   String email = currentUser.email ?? "No email available";
                   String role = "Member";
@@ -77,6 +69,24 @@ class ProfilePage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        // Custom Header (replaces AppBar)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: Row(
+                            children: [
+                              Icon(Icons.person, size: 32, color: textColor),
+                              SizedBox(width: 12),
+                              Text(
+                                'My Profile',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: textColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         SizedBox(height: 20),
                         CircleAvatar(
                           radius: 60,
@@ -103,7 +113,7 @@ class ProfilePage extends StatelessWidget {
                         Text(
                           email,
                           style: TextStyle(
-                            color: textColor.withOpacity(0.7),
+                            color: textColor,
                             fontSize: 16,
                           ),
                         ),
@@ -112,7 +122,7 @@ class ProfilePage extends StatelessWidget {
                           icon: Icons.verified_user,
                           title: "User Role",
                           subtitle: role,
-                          color: primaryColor.withOpacity(0.7),
+                          color: primaryColor,
                           textColor: textColor,
                         ),
                         SizedBox(height: 16),
@@ -120,10 +130,10 @@ class ProfilePage extends StatelessWidget {
                           icon: Icons.settings,
                           title: "Settings",
                           subtitle: "Account, Notifications, etc.",
-                          color: secondaryColor.withOpacity(0.7),
+                          color: secondaryColor,
                           textColor: textColor,
                           onTap: () {
-                            // Navigate to settings
+                            // Handle tap
                           },
                         ),
                         SizedBox(height: 20),

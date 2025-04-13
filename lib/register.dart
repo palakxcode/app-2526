@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'auth_service.dart';
+import 'dashboard.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -21,7 +22,10 @@ class _RegisterPageState extends State<RegisterPage> {
   final List<String> departments = [
     'Technical',
     'Management',
+    'Operations',
     'Social Media & Content',
+    'Sposnorship & Marketing',
+    'Design',
   ];
 
   Future<void> registerUser() async {
@@ -41,20 +45,19 @@ class _RegisterPageState extends State<RegisterPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Invalid invite code.'),
-          backgroundColor: Color(0xFFFFB5CC), // Pastel pink
+          backgroundColor: Color(0xFFFFB5CC),
           behavior: SnackBarBehavior.floating,
         ),
       );
       return;
     }
 
-    // Validate department if required
     if ((_selectedRole == 'Member' || _selectedRole == 'Core') &&
         _selectedDepartment == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Please select a department.'),
-          backgroundColor: Color(0xFFFFB5CC), // Pastel pink
+          backgroundColor: Color(0xFFFFB5CC),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -67,7 +70,7 @@ class _RegisterPageState extends State<RegisterPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result),
-          backgroundColor: Color(0xFFFFB5CC), // Pastel pink
+          backgroundColor: Color(0xFFFFB5CC),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -76,15 +79,28 @@ class _RegisterPageState extends State<RegisterPage> {
         email: email,
         name: name,
         role: _selectedRole,
-        department: _selectedDepartment, // can be null for Board
+        department: _selectedDepartment,
       );
 
-      _emailController.clear();
-      _passwordController.clear();
-      _nameController.clear();
-      _inviteCodeController.clear();
+      final userData = await auth.getUserData();
+      final role = userData?['role'];
 
-      Navigator.pushReplacementNamed(context, '/home');
+      if (role == 'Member' || role == 'Board' || role == 'Core') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DashboardScreen(role: role),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Role not assigned. Please contact admin.'),
+            backgroundColor: Color(0xFFFFB5CC),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 

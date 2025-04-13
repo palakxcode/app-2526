@@ -4,7 +4,7 @@ import 'widgets/board_member_tile.dart';
 class BoardMembersPage extends StatelessWidget {
   final List<Map<String, String>> boardMembers = [
     {'name': 'Aditi Babu', 'position': 'Secretary'},
-    {'name': ' Ayush Tripathi', 'position': 'General Secretary'},
+    {'name': ' Aayush Tripathi', 'position': 'General Secretary'},
     {'name': 'Naman Jain', 'position': 'General Secretary'},
   ];
 

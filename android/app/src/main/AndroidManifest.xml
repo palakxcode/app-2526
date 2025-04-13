@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="ac_2425"
+        android:label="Android Club 2025-26"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

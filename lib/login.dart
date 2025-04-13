@@ -1,6 +1,8 @@
 import 'package:ac_2425/auth_service.dart';
 import 'package:flutter/material.dart';
 
+import 'dashboard.dart';
+
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -36,14 +38,24 @@ class _LoginPageState extends State<LoginPage> {
 
       final role = userData?['role'];
 
-      if (role == 'Member') {
-        Navigator.pushReplacementNamed(context, '/memberHome');
-      } else if (role == 'Board') {
-        Navigator.pushReplacementNamed(context, '/boardHome');
-      } else if (role == 'Core') {
-        Navigator.pushReplacementNamed(context, '/coreHome');
+      if (result != null) {
+        showSnackBar(result);
       } else {
-        showSnackBar('Role not assigned. Please contact admin.');
+        // Get role from Firestore
+        final userData = await auth.getUserData();
+        final role = userData?['role'];
+
+        if (role == 'Member' || role == 'Board' || role == 'Core') {
+          // Navigate to DashboardScreen with the role
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DashboardScreen(role: role),
+            ),
+          );
+        } else {
+          showSnackBar('Role not assigned. Please contact admin.');
+        }
       }
     }
   }
