@@ -1,208 +1,287 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
-class EventsPage extends StatelessWidget {
-  final List<Map<String, dynamic>> events = List.generate(
-    10,
-    (index) => {
-      "title": "Event ${index + 1}",
-      "details": "Details for Event ${index + 1}",
-      "date": "${(index % 30) + 1} ${_getMonth(index % 12)}",
-      "icon": _getEventIcon(index),
-    },
-  );
+class EventsPage extends StatefulWidget {
+  @override
+  _EventsPageState createState() => _EventsPageState();
+}
 
-  static String _getMonth(int month) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
-    return months[month];
+class _EventsPageState extends State<EventsPage> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isPrivilegedUser = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkUserRole();
   }
 
-  static IconData _getEventIcon(int index) {
-    final icons = [
-      Icons.event,
-      Icons.celebration,
-      Icons.groups,
-      Icons.school,
-      Icons.code,
-      Icons.mic,
-      Icons.sports_esports,
-      Icons.palette,
-      Icons.music_note,
-      Icons.sports,
-    ];
-    return icons[index % icons.length];
+  Future<void> _checkUserRole() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      User? currentUser = _auth.currentUser;
+      if (currentUser != null) {
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(currentUser.uid).get();
+        if (userDoc.exists) {
+          String role = userDoc.get('role');
+          setState(() {
+            _isPrivilegedUser = (role == 'Core' || role == 'Board');
+          });
+        }
+      }
+    } catch (e) {
+      print('Error checking user role: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _addAnnouncement(BuildContext context) {
+    final titleController = TextEditingController();
+
+    DateTime? selectedDateTime;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: Text('Add Event'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: InputDecoration(
+                    labelText: 'Title',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () async {
+                    DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      TimeOfDay? time = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+                      if (time != null) {
+                        setState(() {
+                          selectedDateTime = DateTime(
+                            picked.year,
+                            picked.month,
+                            picked.day,
+                            time.hour,
+                            time.minute,
+                          );
+                        });
+                      }
+                    }
+                  },
+                  child: Text(selectedDateTime == null
+                      ? 'Pick Date & Time'
+                      : DateFormat('yMMMd – h:mm a').format(selectedDateTime!)),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (titleController.text.isNotEmpty &&
+                      selectedDateTime != null) {
+                    _firestore.collection('events').add({
+                      'message': '${titleController.text}',
+                      'eventDate': selectedDateTime,
+                      'timestamp': FieldValue.serverTimestamp(),
+                    });
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text('Post'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  void _deleteEvent(String documentId) {
+    _firestore.collection('events').doc(documentId).delete();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Pastel theme colors
-    final pastelPink = Color(0xFFFFD1DC);
-    final pastelBlue = Color(0xFFB5DEFF);
-    final pastelMint = Color(0xFFAFE1AF);
-    final pastelLavender = Color(0xFFE6E6FA);
-    final pastelPeach = Color(0xFFFFDAB9);
-    final pastelYellow = Color(0xFFFFFACD);
-
-    List<Color> pastelColors = [
-      pastelPink,
-      pastelBlue,
-      pastelMint,
-      pastelLavender,
-      pastelPeach,
-      pastelYellow,
+    final pastelColors = [
+      Color(0xFFFFD1DC), // pink
+      Color(0xFFB5DEFF), // blue
+      Color(0xFFAFE1AF), // mint
+      Color(0xFFE6E6FA), // lavender
+      Color(0xFFFFDAB9), // peach
+      Color(0xFFFFFACD), // yellow
     ];
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [pastelLavender, Colors.white],
+    if (_isLoading) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFE6E6FA), Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        padding: EdgeInsets.fromLTRB(16, 50, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.calendar_month_rounded, size: 32),
+                SizedBox(width: 12),
+                Text('Events',
+                    style:
+                        TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: _firestore
+                    .collection('events')
+                    .orderBy('timestamp', descending: true)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting)
+                    return Center(child: CircularProgressIndicator());
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
+                    return Center(child: Text('No events available'));
+
+                  final events = snapshot.data!.docs;
+
+                  return ListView.builder(
+                    itemCount: events.length,
+                    itemBuilder: (context, index) {
+                      final doc = events[index];
+                      final data = doc.data() as Map<String, dynamic>;
+                      final id = doc.id;
+
+                      final message = data['message'] ?? '';
+                      final parts = message.split(':');
+                      final title = parts[0].trim();
+
+                      DateTime? eventDate;
+                      if (data['eventDate'] != null) {
+                        eventDate = (data['eventDate'] as Timestamp).toDate();
+                      }
+
+                      final color = pastelColors[index % pastelColors.length];
+
+                      return _isPrivilegedUser
+                          ? Dismissible(
+                              key: Key(id),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                alignment: Alignment.centerRight,
+                                padding: EdgeInsets.symmetric(horizontal: 20),
+                                color: Colors.red,
+                                child: Icon(Icons.delete, color: Colors.white),
+                              ),
+                              confirmDismiss: (direction) async {
+                                return await showDialog(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                    title: Text("Delete Event"),
+                                    content: Text(
+                                        "Are you sure you want to delete this event?"),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: Text("Cancel")),
+                                      TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: Text("Delete")),
+                                    ],
+                                  ),
+                                );
+                              },
+                              onDismissed: (_) => _deleteEvent(id),
+                              child: _buildEventCard(color, title, eventDate),
+                            )
+                          : _buildEventCard(color, title, eventDate);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
-      padding: EdgeInsets.only(top: 50, left: 16, right: 16, bottom: 16),
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniEndTop,
+      floatingActionButton: _isPrivilegedUser
+          ? FloatingActionButton(
+              elevation: 0,
+              backgroundColor: Color(0xFFB5DEFF),
+              onPressed: () => _addAnnouncement(context),
+              child: Icon(Icons.add, color: Colors.black),
+            )
+          : null,
+    );
+  }
+
+  Widget _buildEventCard(Color color, String title, DateTime? date) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color, color.withOpacity(0.7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              blurRadius: 6,
+              offset: Offset(0, 3))
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.event_note,
-                  size: 32,
-                  color: Colors.black87,
-                ),
-                SizedBox(width: 12),
-                Text(
-                  'Upcoming Events',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: events.length,
-              itemBuilder: (context, index) {
-                final event = events[index];
-                final color = pastelColors[index % pastelColors.length];
-
-                return Container(
-                  margin: EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        color,
-                        color.withOpacity(0.7),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: Offset(0, 3),
-                      )
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      // Left date container
-                      Container(
-                        width: 70,
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.5),
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            bottomLeft: Radius.circular(20),
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              event["date"].split(' ')[0],
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            Text(
-                              event["date"].split(' ')[1],
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Event details
-                      Expanded(
-                        child: ListTile(
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          title: Text(
-                            event["title"],
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
-                            child: Text(
-                              event["details"],
-                              style: TextStyle(
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ),
-                          trailing: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.3),
-                              shape: BoxShape.circle,
-                            ),
-                            padding: EdgeInsets.all(8),
-                            child: Icon(
-                              event["icon"],
-                              color: Colors.black87,
-                            ),
-                          ),
-                          onTap: () {
-                            // Handle event tap
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
+          Text(title,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          SizedBox(height: 8),
+          if (date != null) ...[
+            SizedBox(height: 8),
+            Text('📅 ' + DateFormat('d MMM y – h:mm a').format(date),
+                style: TextStyle(color: Colors.black87)),
+          ],
         ],
       ),
     );

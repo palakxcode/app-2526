@@ -36,8 +36,6 @@ class _LoginPageState extends State<LoginPage> {
       final userData =
           await auth.getUserData(); // You'll write this in AuthService
 
-      final role = userData?['role'];
-
       if (result != null) {
         showSnackBar(result);
       } else {
