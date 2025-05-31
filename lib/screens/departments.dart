@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'widgets/member_grid.dart'; // Make sure this path is correct
+import '../widgets/member_grid.dart'; // Make sure this path is correct
 
 class DepartmentSelectionPage extends StatelessWidget {
   final List<String> departments = [

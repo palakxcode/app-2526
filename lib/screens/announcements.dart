@@ -170,6 +170,7 @@ class _AnnouncementsPageState extends State<AnnouncementsPage> {
 
                   final announcements = snapshot.data!.docs;
 
+                  //display the announcemments
                   return ListView.builder(
                     itemCount: announcements.length,
                     itemBuilder: (context, index) {

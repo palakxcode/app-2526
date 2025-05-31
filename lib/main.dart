@@ -6,7 +6,7 @@ import 'firebase_options.dart';
 import 'package:ac_2425/screens/login.dart';
 import 'package:ac_2425/screens/register.dart';
 import 'package:ac_2425/wrapper.dart';
-import 'dashboard.dart';
+import '../dashboard.dart';
 import 'placeholder.dart';
 import 'screens/profile_page.dart';
 

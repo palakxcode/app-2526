@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ac_2425/board_members.dart';
+import 'package:ac_2425/screens/board_members.dart';
 import 'departments.dart';
-import 'widgets/custom_grid.dart';
+import '../widgets/custom_grid.dart';
 
 class ClubMembersPage extends StatelessWidget {
   @override
