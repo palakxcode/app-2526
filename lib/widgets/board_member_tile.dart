@@ -4,19 +4,21 @@ class BoardMemberTile extends StatelessWidget {
   final String name;
   final String role;
   final bool isSquare;
+  final String? imageUrl;
 
   const BoardMemberTile({
     Key? key,
     required this.name,
     required this.role,
     this.isSquare = false,
+    this.imageUrl,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: isSquare ? 150 : double.infinity,
-      height: isSquare ? 150 : 80,
+      height: isSquare ? 200 : 100,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.blue.shade100,
@@ -30,22 +32,37 @@ class BoardMemberTile extends StatelessWidget {
         ],
       ),
       child: Column(
-        mainAxisAlignment:
-            isSquare ? MainAxisAlignment.center : MainAxisAlignment.center,
-        crossAxisAlignment:
-            isSquare ? CrossAxisAlignment.center : CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          if (imageUrl != null) ...[
+            CircleAvatar(
+              radius: isSquare ? 40 : 25,
+              backgroundImage: NetworkImage(imageUrl!),
+              backgroundColor: Colors.grey[200],
+              child: imageUrl == null
+                  ? Icon(
+                      Icons.person,
+                      size: isSquare ? 40 : 25,
+                      color: Colors.grey[400],
+                    )
+                  : null,
+            ),
+            const SizedBox(height: 8),
+          ],
           Text(
             name,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: isSquare ? 18 : 16,
+            ),
             textAlign: TextAlign.center,
           ),
           Text(
             role,
-            style: const TextStyle(fontSize: 15),
+            style: TextStyle(fontSize: isSquare ? 14 : 13),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 4),
         ],
       ),
     );

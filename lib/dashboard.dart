@@ -5,9 +5,9 @@ import 'boards/board_dashboard.dart';
 import 'core/core_dashboard.dart';
 import 'member/member_dashboard.dart';
 import 'club_members.dart';
-import 'events.dart';
-import 'announcements.dart';
-import 'profile_page.dart';
+import 'screens/events.dart';
+import 'screens/announcements.dart';
+import 'screens/profile_page.dart';
 
 class DashboardScreen extends StatefulWidget {
   final String role;

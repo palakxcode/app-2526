@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../constants/palette.dart';
+
 class AnnouncementsPage extends StatefulWidget {
   @override
   _AnnouncementsPageState createState() => _AnnouncementsPageState();
@@ -104,23 +106,6 @@ class _AnnouncementsPageState extends State<AnnouncementsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Pastel theme colors
-    final pastelPink = Color(0xFFFFD1DC);
-    final pastelBlue = Color(0xFFB5DEFF);
-    final pastelMint = Color(0xFFAFE1AF);
-    final pastelLavender = Color(0xFFE6E6FA);
-    final pastelPeach = Color(0xFFFFDAB9);
-    final pastelYellow = Color(0xFFFFFACD);
-
-    List<Color> pastelColors = [
-      pastelPink,
-      pastelBlue,
-      pastelMint,
-      pastelLavender,
-      pastelPeach,
-      pastelYellow,
-    ];
-
     if (_isLoading) {
       return Scaffold(
         body: Center(

@@ -3,12 +3,12 @@ import 'package:ac_2425/member/member_dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:ac_2425/login.dart';
-import 'package:ac_2425/register.dart';
+import 'package:ac_2425/screens/login.dart';
+import 'package:ac_2425/screens/register.dart';
 import 'package:ac_2425/wrapper.dart';
 import 'dashboard.dart';
 import 'placeholder.dart';
-import 'profile_page.dart';
+import 'screens/profile_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
